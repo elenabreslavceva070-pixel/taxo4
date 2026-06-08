@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Налоговый тренажер — Оптимизация зарплатных налогов (урок 2)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f2f6fc;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif;
+            padding: 24px 16px;
+            color: #1a3448;
+        }
+
+        .trainer-container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(149, 202, 250, 0.4);
+        }
+
+        .task-header {
+            margin-bottom: 16px;
+        }
+        .task-header p {
+            margin-bottom: 8px;
+            line-height: 1.45;
+            font-size: 0.9rem;
+        }
+        .info-text {
+            background: #f8fbfe;
+            border-left: 4px solid #95CAFA;
+            padding: 14px 18px;
+            border-radius: 16px;
+            margin: 12px 0;
+            font-size: 0.85rem;
+        }
+        .calc-wrapper {
+            overflow-x: auto;
+            margin: 16px 0 8px;
+            border-radius: 16px;
+        }
+        .calc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            background: white;
+            border-radius: 16px;
+        }
+        .calc-table th, .calc-table td {
+            border: 1px solid #dce8f2;
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .calc-table th {
+            background: #eef3fc;
+            font-weight: 700;
+            color: #1b5a80;
+            font-size: 0.7rem;
+            padding: 8px 4px;
+        }
+        .input-cell input {
+            width: 100px;
+            padding: 6px 4px;
+            border-radius: 12px;
+            border: 1.5px solid #caddf0;
+            text-align: center;
+            font-weight: 500;
+            font-family: inherit;
+            font-size: 0.68rem;
+            background: #fff;
+            transition: all 0.1s;
+        }
+        .input-cell input:focus {
+            outline: none;
+            border-color: #5fa3cf;
+            box-shadow: 0 0 0 2px rgba(95,163,207,0.2);
+        }
+        .input-cell input.correct-input {
+            border-color: #2b7a3e;
+            background-color: #e8f5e9;
+            box-shadow: 0 0 0 1px #2b7a3e;
+        }
+        .input-cell input.error-input {
+            border-color: #e06c6c;
+            background-color: #fff6f5;
+            box-shadow: 0 0 0 1px #e06c6c;
+        }
+        .fixed-cell {
+            background: #fafdff;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+        .savings-row {
+            background: #eef3fc;
+            font-weight: 700;
+        }
+        .action-area {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: #1f6f9b;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0e577f;
+        }
+        .btn-secondary {
+            background: #eef2f8;
+            color: #2b5c7c;
+            border: 1px solid #caddf0;
+        }
+        .btn-secondary:hover {
+            background: #e2eaf3;
+        }
+        .feedback-area {
+            margin-top: 16px;
+            padding: 10px 16px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .progress-card {
+            background: white;
+            border-radius: 24px;
+            padding: 16px 20px;
+            border: 1px solid #d4e4f0;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .progress-bar {
+            background: #e2ebf3;
+            border-radius: 30px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #2c7cb6;
+            width: 0%;
+            height: 100%;
+            border-radius: 30px;
+            transition: width 0.4s ease;
+        }
+        .progress-message {
+            font-size: 0.7rem;
+            margin-top: 8px;
+            color: #527a99;
+        }
+        .small-note {
+            font-size: 0.65rem;
+            color: #6f8faa;
+            margin-top: 8px;
+            text-align: right;
+        }
+        .lightbulb-hint {
+            background: #fff8e7;
+            border-radius: 20px;
+            margin-top: 16px;
+            padding: 8px 16px;
+            border-left: 4px solid #f5b042;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .lightbulb-icon {
+            font-size: 1.3rem;
+        }
+        .lightbulb-content span {
+            font-weight: 500;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 1100px;
+            max-height: 85vh;
+            overflow: auto;
+            padding: 20px 24px;
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #eef3fc;
+            padding-bottom: 10px;
+        }
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1c6f9e;
+        }
+        .close-modal {
+            font-size: 26px;
+            cursor: pointer;
+            color: #8aaec0;
+        }
+        .close-modal:hover {
+            color: #1c6f9e;
+        }
+        .correct-table-modal {
+            overflow-x: auto;
+        }
+        .correct-table-modal table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            background: #ffffff;
+        }
+        .correct-table-modal th, .correct-table-modal td {
+            border: 1px solid #dce8f2;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        .correct-table-modal th {
+            background: #eef3fc;
+            font-weight: 700;
+        }
+        @media (max-width: 900px) {
+            .input-cell input { width: 80px; font-size: 0.62rem; }
+            .calc-table th, .calc-table td { padding: 5px 3px; font-size: 0.62rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="trainer-container">
+    <div class="card">
+        <div class="task-header">
+            <p>В компании Ивана Петровича работает Смирнов по трудовому договору: оклад — 120 000 руб. Дополнительно выполняет работу разъездного характера и получает компенсацию — 18 000 руб.; компенсацию за ноутбук — 12 000 руб.; компенсацию за телефон — 5 000 руб.</p>
+            <p>Компания заключила гражданско-правовой договор с самозанятым Кузнецовым. Он оказывает услуги — у него разъездной характер, использование личного ноутбука и телефона. Вознаграждение Кузнецова — 35 000 руб. в месяц.</p>
+            <div class="info-text">
+                <strong>Задача:</strong> Посчитайте, сколько компания сэкономит за год на двух этих способах (Смирнов + Кузнецов) по сравнению с оплатой обоих как штатных работников без компенсаций. Заполните все ячейки в таблице.
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="calc-wrapper">
+            <table class="calc-table">
+                <thead>
+                    <tr><th rowspan="2">Показатель</th><th colspan="2">Расчет с оптимизацией</th><th colspan="2">Расчет без оптимизации</th></tr>
+                    <tr><th>Смирнов (компенсации)</th><th>Кузнецов (самозанятый)</th><th>Смирнов (без компенсаций)</th><th>Кузнецов (в штате)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="fixed-cell">Оклад / вознаграждение (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_salary" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_reward" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_salary" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_salary" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                    <tr><td class="fixed-cell">Компенсации (не облагаются) (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_comp" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_comp" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_comp" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_comp" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                    <tr><td class="fixed-cell">Облагаемая база для НДФЛ и взносов (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_base" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_base" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_base" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_base" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                    <tr><td class="fixed-cell">НДФЛ (удерживает компания) (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_ndfl" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_ndfl" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_ndfl" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_ndfl" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                    <tr><td class="fixed-cell">Страховые взносы (платит компания) (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_insurance" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_insurance" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_insurance" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_insurance" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                    <tr class="savings-row"><td class="fixed-cell">Общая сумма налогов за месяц (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_total" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_total" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_total" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_total" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                    <tr><td class="fixed-cell">Расход компании на вознаграждение (руб.)</td>
+                        <td class="input-cell"><input type="text" id="opt_smirnov_cost" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="opt_kuznetsov_cost" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_smirnov_cost" placeholder="______" autocomplete="off"></td>
+                        <td class="input-cell"><input type="text" id="noopt_kuznetsov_cost" placeholder="______" autocomplete="off"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="small-note">💡 Заполните все ячейки. Компенсации и вознаграждение самозанятого не облагаются налогами.</div>
+    </div>
+
+    <div class="card">
+        <div class="calc-wrapper">
+            <table class="calc-table">
+                <thead><tr><th>Показатель</th><th>Сумма (руб.)</th></tr></thead>
+                <tbody>
+                    <tr><td class="fixed-cell">Общая экономия за месяц (руб.)</td>
+                        <td class="input-cell"><input type="text" id="monthlySavings" placeholder="______" style="width:140px" autocomplete="off"></td>
+                    </tr>
+                    <tr><td class="fixed-cell">Общая экономия за год (руб.)</td>
+                        <td class="input-cell"><input type="text" id="yearlySavings" placeholder="______" style="width:140px" autocomplete="off"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="action-area">
+        <button class="btn btn-primary" id="checkBtn">Проверить</button>
+        <button class="btn btn-secondary" id="resetBtn">Начать заново</button>
+    </div>
+    <div id="globalFeedback" class="feedback-area" style="background: #f8fafd;"></div>
+
+    <div id="lightbulbHint" class="lightbulb-hint" style="display: none;">
+        <div class="lightbulb-icon">💡</div>
+        <div class="lightbulb-content"><span>Смотреть правильный ответ</span></div>
+    </div>
+
+    <div class="progress-card">
+        <div class="progress-label">
+            <span>Прогресс курса «Выбираем способы налоговой экономии, которые не нарушают закон»</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-message" id="progressMessage"></div>
+    </div>
+</div>
+
+<div id="correctModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Правильный ответ</h3><span class="close-modal">&times;</span></div>
+        <div class="correct-table-modal" id="modalTableContainer"></div>
+    </div>
+</div>
+
+<script>
+    const correctValues = {
+        opt_smirnov_salary: 120000, opt_kuznetsov_reward: 35000,
+        opt_smirnov_comp: 35000, opt_kuznetsov_comp: 0,
+        opt_smirnov_base: 120000, opt_kuznetsov_base: 0,
+        opt_smirnov_ndfl: 15600, opt_kuznetsov_ndfl: 0,
+        opt_smirnov_insurance: 36000, opt_kuznetsov_insurance: 0,
+        opt_smirnov_total: 51600, opt_kuznetsov_total: 0,
+        opt_smirnov_cost: 0, opt_kuznetsov_cost: 35000,
+        noopt_smirnov_salary: 155000, noopt_kuznetsov_salary: 35000,
+        noopt_smirnov_comp: 0, noopt_kuznetsov_comp: 0,
+        noopt_smirnov_base: 155000, noopt_kuznetsov_base: 35000,
+        noopt_smirnov_ndfl: 20150, noopt_kuznetsov_ndfl: 4550,
+        noopt_smirnov_insurance: 46500, noopt_kuznetsov_insurance: 10500,
+        noopt_smirnov_total: 66650, noopt_kuznetsov_total: 15050,
+        noopt_smirnov_cost: 0, noopt_kuznetsov_cost: 0,
+        monthlySavings: 30100, yearlySavings: 361200
+    };
+
+    const STORAGE_GLOBAL = "tax_trainer_global_progress";
+
+    let lesson2Completed = false;
+    let currentProgress = 0;
+
+    const fields = {};
+    const fieldIds = Object.keys(correctValues);
+    for (let id of fieldIds) fields[id] = document.getElementById(id);
+
+    function loadGlobalProgress() {
+        const saved = localStorage.getItem(STORAGE_GLOBAL);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                currentProgress = data.progress || 0;
+                if (data.lesson2 === true) lesson2Completed = true;
+                updateProgressBar(currentProgress);
+                if (lesson2Completed) {
+                    document.getElementById('lightbulbHint').style.display = 'none';
+                    document.getElementById('globalFeedback').innerHTML = '✅ Вы уже прошли этот урок! Прогресс сохранен.';
+                    document.getElementById('globalFeedback').style.background = '#dff0e3';
+                }
+                return;
+            } catch(e) {}
+        }
+        currentProgress = 0;
+        updateProgressBar(0);
+    }
+
+    function saveGlobalProgress(completed) {
+        if (completed && !lesson2Completed) {
+            // Принудительно устанавливаем прогресс 66%
+            currentProgress = 66;
+            lesson2Completed = true;
+            
+            const data = {
+                progress: 66,
+                lesson1: true,
+                lesson2: true
+            };
+            localStorage.setItem(STORAGE_GLOBAL, JSON.stringify(data));
+            updateProgressBar(66);
+        }
+    }
+
+    function updateProgressBar(percent) {
+        const fill = document.getElementById('progressFill');
+        const percentSpan = document.getElementById('progressPercent');
+        fill.style.width = percent + '%';
+        percentSpan.innerText = percent + '%';
+        const msgDiv = document.getElementById('progressMessage');
+        if (percent >= 66) {
+            msgDiv.innerHTML = 'Отлично! Вы прошли оба урока и набрали 66% прогресса. Остался последний урок.';
+        } else if (percent >= 33) {
+            msgDiv.innerHTML = 'Хорошо! Вы уже набрали 33% прогресса. Продолжайте в том же духе.';
+        } else {
+            msgDiv.innerHTML = 'Решите задачу правильно, чтобы получить 33% прогресса и перейти к следующему уроку.';
+        }
+    }
+
+    function saveLessonDraft() {
+        const draft = {};
+        for (let id of fieldIds) if (fields[id]) draft[id] = fields[id].value;
+        localStorage.setItem('tax_trainer_lesson2_draft', JSON.stringify(draft));
+    }
+
+    function loadLessonDraft() {
+        const saved = localStorage.getItem('tax_trainer_lesson2_draft');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                for (let id in data) if (fields[id]) fields[id].value = data[id];
+            } catch(e) {}
+        }
+    }
+
+    function isAllFieldsFilled() {
+        for (let id of fieldIds) {
+            const field = fields[id];
+            if (field && field.value.trim() === '') return false;
+        }
+        return true;
+    }
+
+    function highlightFields() {
+        for (let [key, correctVal] of Object.entries(correctValues)) {
+            const field = fields[key];
+            if (!field) continue;
+            const val = parseFloat(field.value.replace(/\s/g, '').replace(/,/g, ''));
+            field.classList.remove('correct-input', 'error-input');
+            if (!isNaN(val) && Math.abs(val - correctVal) <= 0.5) {
+                field.classList.add('correct-input');
+            } else if (field.value.trim() !== '') {
+                field.classList.add('error-input');
+            }
+        }
+    }
+
+    function isAllCorrect() {
+        for (let [key, correctVal] of Object.entries(correctValues)) {
+            const field = fields[key];
+            if (!field) continue;
+            const val = parseFloat(field.value.replace(/\s/g, '').replace(/,/g, ''));
+            if (isNaN(val) || Math.abs(val - correctVal) > 0.5) return false;
+        }
+        return true;
+    }
+
+    function checkSolution() {
+        const allFieldsFilled = isAllFieldsFilled();
+        const allOk = isAllCorrect();
+        const fbDiv = document.getElementById('globalFeedback');
+        const bulb = document.getElementById('lightbulbHint');
+        
+        highlightFields();
+
+        if (!allFieldsFilled || !allOk) {
+            fbDiv.innerHTML = 'Вы заполнили показатели неверно.';
+            fbDiv.style.background = '#ffe6e2';
+            fbDiv.style.color = '#ac3c2f';
+            bulb.style.display = 'flex';
+            return;
+        }
+
+        fbDiv.innerHTML = '✅ Поздравляю! Все расчеты выполнены верно. Компания экономит 30 100 руб. в месяц и 361 200 руб. в год за счет оптимизации (компенсации + самозанятый).';
+        fbDiv.style.background = '#dff0e3';
+        fbDiv.style.color = '#1c6f2f';
+        bulb.style.display = 'none';
+
+        saveGlobalProgress(true);
+        saveLessonDraft();
+    }
+
+    function resetEverything() {
+        for (let [key, val] of Object.entries(correctValues)) {
+            if (fields[key]) {
+                fields[key].value = '';
+                fields[key].classList.remove('correct-input', 'error-input');
+            }
+        }
+        const fbDiv = document.getElementById('globalFeedback');
+        fbDiv.innerHTML = '';
+        fbDiv.style.background = '#f8fafd';
+        document.getElementById('lightbulbHint').style.display = 'none';
+        saveLessonDraft();
+    }
+
+    function renderCorrectTable() {
+        const container = document.getElementById('modalTableContainer');
+        let html = `<table style="width:100%; border-collapse: collapse; font-size:0.7rem;"><thead><tr><th>Показатель</th><th>Смирнов (оптимизация)</th><th>Кузнецов (оптимизация)</th><th>Смирнов (без оптим.)</th><th>Кузнецов (без оптим.)</th></tr></thead><tbody>
+            <tr><td>Оклад / вознаграждение</td><td>${correctValues.opt_smirnov_salary.toLocaleString('ru-RU')}</td><td>${correctValues.opt_kuznetsov_reward.toLocaleString('ru-RU')}</td><td>${correctValues.noopt_smirnov_salary.toLocaleString('ru-RU')}</td><td>${correctValues.noopt_kuznetsov_salary.toLocaleString('ru-RU')}</td></tr>
+            <tr><td>Компенсации (не облагаются)</td><td>${correctValues.opt_smirnov_comp.toLocaleString('ru-RU')}</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td>Облагаемая база</td><td>${correctValues.opt_smirnov_base.toLocaleString('ru-RU')}</td><td>0</td><td>${correctValues.noopt_smirnov_base.toLocaleString('ru-RU')}</td><td>${correctValues.noopt_kuznetsov_base.toLocaleString('ru-RU')}</td></tr>
+            <tr><td>НДФЛ</td><td>${correctValues.opt_smirnov_ndfl.toLocaleString('ru-RU')}</td><td>0</td><td>${correctValues.noopt_smirnov_ndfl.toLocaleString('ru-RU')}</td><td>${correctValues.noopt_kuznetsov_ndfl.toLocaleString('ru-RU')}</td></tr>
+            <tr><td>Страховые взносы</td><td>${correctValues.opt_smirnov_insurance.toLocaleString('ru-RU')}</td><td>0</td><td>${correctValues.noopt_smirnov_insurance.toLocaleString('ru-RU')}</td><td>${correctValues.noopt_kuznetsov_insurance.toLocaleString('ru-RU')}</td></tr>
+            <tr style="background:#eef3fc;"><td><strong>Итого налогов за месяц</strong></td><td><strong>${correctValues.opt_smirnov_total.toLocaleString('ru-RU')}</strong></td><td>0</td><td><strong>${correctValues.noopt_smirnov_total.toLocaleString('ru-RU')}</strong></td><td><strong>${correctValues.noopt_kuznetsov_total.toLocaleString('ru-RU')}</strong></td></tr>
+            <tr><td>Расход компании на вознаграждение</td><td>${correctValues.opt_smirnov_cost.toLocaleString('ru-RU')}</td><td>${correctValues.opt_kuznetsov_cost.toLocaleString('ru-RU')}</td><td>0</td><td>0</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4"><strong>Экономия за месяц:</strong> ${correctValues.monthlySavings.toLocaleString('ru-RU')} руб.</td></tr>
+        <tr><td colspan="4"><strong>Экономия за год:</strong> ${correctValues.yearlySavings.toLocaleString('ru-RU')} руб.</td></tr></tfoot></table>`;
+        container.innerHTML = html;
+    }
+
+    function openModal() { renderCorrectTable(); document.getElementById('correctModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('correctModal').style.display = 'none'; }
+    function attachAutoSave() { for (let id of fieldIds) if (fields[id]) fields[id].addEventListener('input', () => saveLessonDraft()); }
+
+    loadGlobalProgress();
+    loadLessonDraft();
+    attachAutoSave();
+
+    document.getElementById('checkBtn').addEventListener('click', checkSolution);
+    document.getElementById('resetBtn').addEventListener('click', resetEverything);
+    document.getElementById('lightbulbHint').addEventListener('click', openModal);
+    document.querySelector('.close-modal').addEventListener('click', closeModal);
+    document.getElementById('correctModal').addEventListener('click', (e) => { if (e.target === document.getElementById('correctModal')) closeModal(); });
+</script>
+</body>
+</html>
